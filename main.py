@@ -5,7 +5,7 @@ load_dotenv()
 
 def main():
     print("Hello from claude-chat!")
-    chat.basic_message()
+    chat.interactive()
 
 
 if __name__ == "__main__":
