@@ -21,7 +21,7 @@ def basic_message():
 def interactive():
     client = anthropic.Anthropic()
     print("Hello welcome to Claude Chat! Type your response below. To exit type 'exit' or 'quit'")
-    query = input("You:")
+    query = input("You: ")
     while (query not in ['quit', 'exit']):
         response = client.messages.create(
             model="claude-haiku-4-5",
@@ -36,8 +36,11 @@ def interactive():
         if response.stop_reason == 'end_turn':
             print(f"Claude: {response.content[0].text}")
             print(f"[Tokens used - in: {response.usage.input_tokens}, out: {response.usage.output_tokens}]")
-        else:
+        elif response.stop_reason == 'max_tokens':
             print('The answer for your query was too long and was truncated:')
             print(f"Claude: {response.content[0].text}")
-        query = input("You:")
+        else:
+            print('The answer for your query was cut short due to:')
+            print(f"Claude: {response.stop_reason}")
+        query = input("You: ")
     print("Goodbye!")
