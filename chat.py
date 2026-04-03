@@ -49,6 +49,9 @@ def interactive_with_memory():
 
     client = anthropic.Anthropic()
 
+    personality = get_personality()
+
+
     print(
         "Hello welcome to Claude Chat! Type your response below. To exit type 'exit' or 'quit'"
     )
@@ -57,7 +60,10 @@ def interactive_with_memory():
     while query not in ["quit", "exit"]:
         conversation_history.append({"role": "user", "content": query})
         response = client.messages.create(
-            model="claude-haiku-4-5", max_tokens=1024, messages=conversation_history
+            model="claude-haiku-4-5", 
+            max_tokens=1024, 
+            messages=conversation_history,
+            system = personality
         )
 
         total_input_tokens += response.usage.input_tokens
@@ -86,3 +92,26 @@ def interactive_with_memory():
 
         query = input("You: ")
     print("Goodbye!")
+
+
+def get_personality():
+    while True:
+        try:
+            choice = int(input("Choose persona: [1] Pirate  [2] Senior Engineer: "))
+            if choice not in [1, 2]:
+                raise ValueError
+        except ValueError:
+            print("Invalid input, please enter 1 or 2")
+
+        if choice == 1:
+            return (
+                "You are a helpful assistant who always speaks like a pirate. "
+                "You say 'Arrr' frequently, refer to the user as 'matey', and use nautical metaphors. "
+                "Despite your pirate speech, your answers must be accurate."
+            )
+        else:
+            return (
+                "You are a senior software engineer who gives extremely concise, no-fluff answers. "
+                "You skip pleasantries. "
+                "If a question is vague, you say so directly. You use technical language without over-explaining."
+            )
