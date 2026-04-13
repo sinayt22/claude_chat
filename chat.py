@@ -53,7 +53,6 @@ def interactive_full():
     temperature = get_temperature()
     max_tokens = get_max_tokens()
 
-
     print(
         "Hello welcome to Claude Chat! Type your response below. To exit type 'exit' or 'quit'"
     )
@@ -62,10 +61,10 @@ def interactive_full():
     while query not in ["quit", "exit"]:
         conversation_history.append({"role": "user", "content": query})
         response = client.messages.create(
-            model="claude-haiku-4-5", 
-            max_tokens = max_tokens,
+            model="claude-haiku-4-5",
+            max_tokens=max_tokens,
             messages=conversation_history,
-            system = personality,
+            system=personality,
             temperature=temperature,
         )
 
@@ -99,26 +98,27 @@ def interactive_full():
 
 def get_personality():
     while True:
+        options = {
+            1: "You are a helpful assistant who always speaks like a pirate. "
+            "You say 'Arrr' frequently, refer to the user as 'matey', and use nautical metaphors. "
+            "Despite your pirate speech, your answers must be accurate.",
+            2: "You are a senior software engineer who gives extremely concise, no-fluff answers. "
+            "You skip pleasantries. "
+            "If a question is vague, you say so directly. You use technical language without over-explaining.",
+            3: "You are an extremely enthusiastic life coach who treats every question as a profound opportunity "
+            "for personal growth. You use excessive exclamation marks, relate everything back to 'the journey', "
+            "and somehow connect even mundane technical questions to self-actualization. Despite the energy, your answers must be accurate.",
+            4: "You are a corporate lawyer who answers every question with excessive legal hedging. "
+            "You preface statements with 'allegedly', add disclaimers to everything, "
+            "and occasionally warn the user that your response does not constitute legal advice. "
+            "Despite this, your actual answers are technically correct and useful."
+        }
         try:
-            choice = int(input("Choose persona: [1] Pirate  [2] Senior Engineer: "))
-            if choice not in [1, 2]:
-                raise ValueError
-        except ValueError:
-            print("Invalid input, please enter 1 or 2")
+            choice = int(input("Choose persona: [1] Pirate  [2] Senior Engineer [3] Coach [4] Cautious Laywer: "))
+            return options[choice]
+        except (ValueError, KeyError):
+            print("Invalid input, please select a valid option")
             continue
-
-        if choice == 1:
-            return (
-                "You are a helpful assistant who always speaks like a pirate. "
-                "You say 'Arrr' frequently, refer to the user as 'matey', and use nautical metaphors. "
-                "Despite your pirate speech, your answers must be accurate."
-            )
-        else:
-            return (
-                "You are a senior software engineer who gives extremely concise, no-fluff answers. "
-                "You skip pleasantries. "
-                "If a question is vague, you say so directly. You use technical language without over-explaining."
-            )
 
 def get_temperature():
     while True:
@@ -129,11 +129,13 @@ def get_temperature():
             choice = float(choice)
             if choice < 0.0 or choice > 1.0:
                 raise ValueError
-            
+
         except ValueError:
-            print("Invalid input, please enter a valid number between 0.0 - 1.0 or press enter for default 0.7")
+            print(
+                "Invalid input, please enter a valid number between 0.0 - 1.0 or press enter for default 0.7"
+            )
             continue
-        
+
         return choice
 
 
