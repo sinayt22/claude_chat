@@ -42,7 +42,7 @@ def interactive():
     print("Goodbye!")
 
 
-def interactive_with_memory():
+def interactive_full():
     conversation_history = []
     total_input_tokens = 0
     total_output_tokens = 0
@@ -50,6 +50,8 @@ def interactive_with_memory():
     client = anthropic.Anthropic()
 
     personality = get_personality()
+    temperature = get_temperature()
+    max_tokens = get_max_tokens()
 
 
     print(
@@ -61,9 +63,10 @@ def interactive_with_memory():
         conversation_history.append({"role": "user", "content": query})
         response = client.messages.create(
             model="claude-haiku-4-5", 
-            max_tokens=1024, 
+            max_tokens = max_tokens,
             messages=conversation_history,
-            system = personality
+            system = personality,
+            temperature=temperature,
         )
 
         total_input_tokens += response.usage.input_tokens
@@ -116,3 +119,38 @@ def get_personality():
                 "You skip pleasantries. "
                 "If a question is vague, you say so directly. You use technical language without over-explaining."
             )
+
+def get_temperature():
+    while True:
+        try:
+            choice = input("Temperature (Values between 0.0 - 1.0), default = 0.7: ")
+            if not choice:
+                choice = 0.7
+            choice = float(choice)
+            if choice < 0.0 or choice > 1.0:
+                raise ValueError
+            
+        except ValueError:
+            print("Invalid input, please enter a valid number between 0.0 - 1.0 or press enter for default 0.7")
+            continue
+        
+        return choice
+
+
+def get_max_tokens():
+    while True:
+        try:
+            choice = input("Max Tokens, default = 1024: ")
+            if not choice:
+                choice = 1024
+            choice = int(choice)
+            if choice < 0 or choice > 1_000_000:
+                raise ValueError
+
+        except ValueError:
+            print(
+                "Invalid input, please enter a valid number between 0 - 1,000,000 or press enter for default 1024"
+            )
+            continue
+
+        return choice
