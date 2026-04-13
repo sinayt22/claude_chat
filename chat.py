@@ -102,6 +102,7 @@ def get_personality():
                 raise ValueError
         except ValueError:
             print("Invalid input, please enter 1 or 2")
+            continue
 
         if choice == 1:
             return (
