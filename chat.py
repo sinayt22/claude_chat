@@ -115,8 +115,10 @@ def full_chat():
 
 def print_token_usage(response, total_input_tokens, total_output_tokens):
     if response:
-        print(f"[Tokens used last response - in: {response.usage.input_tokens}, out: {response.usage.output_tokens} ")
-    print(f"total in: {total_input_tokens} out: {total_output_tokens}]")
+        print(f"[Tokens used last response - in: {response.usage.input_tokens}, out: {response.usage.output_tokens} ]")
+    else:
+        print(f"[No messages sent yet]")
+    print(f"[total in: {total_input_tokens} out: {total_output_tokens}]")
 
 
 def get_personality():
@@ -169,12 +171,12 @@ def get_max_tokens():
             if not choice:
                 choice = 1024
             choice = int(choice)
-            if choice < 0 or choice > 1_000_000:
+            if choice < 0 or choice > 8192:
                 raise ValueError
 
         except ValueError:
             print(
-                "Invalid input, please enter a valid number between 0 - 1,000,000 or press enter for default 1024"
+                "Invalid input, please enter a valid number between 0 - 8192 or press enter for default 1024"
             )
             continue
 
