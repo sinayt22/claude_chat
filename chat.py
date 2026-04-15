@@ -1,4 +1,5 @@
 import anthropic
+import os
 
 
 def basic_message():
@@ -42,58 +43,80 @@ def interactive():
     print("Goodbye!")
 
 
-def interactive_full():
-    conversation_history = []
-    total_input_tokens = 0
-    total_output_tokens = 0
+def full_chat():
+    try:
+        conversation_history = []
+        total_input_tokens = 0
+        total_output_tokens = 0
 
-    client = anthropic.Anthropic()
+        client = anthropic.Anthropic()
 
-    personality = get_personality()
-    temperature = get_temperature()
-    max_tokens = get_max_tokens()
+        personality = get_personality()
+        temperature = get_temperature()
+        max_tokens = get_max_tokens()
 
-    print(
-        "Hello welcome to Claude Chat! Type your response below. To exit type 'exit' or 'quit'"
-    )
-    query = input("You: ")
-
-    while query not in ["quit", "exit"]:
-        conversation_history.append({"role": "user", "content": query})
-        response = client.messages.create(
-            model="claude-haiku-4-5",
-            max_tokens=max_tokens,
-            messages=conversation_history,
-            system=personality,
-            temperature=temperature,
+        print(
+            "Hello welcome to Claude Chat! Type your response below. To exit type '/exit' or '/quit'\n" \
+            "type /clear to clear the chat history\n" \
+            "type /tokens to view the tokens usage"
         )
+        query = input("You: ")
+        response = None
+        
+        while query not in ["/quit", "/exit"]:
+            if query == '/clear':
+                conversation_history = []
+                os.system('clear' if os.name == 'posix' else 'cls')
+                query = input("You: ")
+                continue
 
-        total_input_tokens += response.usage.input_tokens
-        total_output_tokens += response.usage.output_tokens
-        reply = response.content[0].text
-        conversation_history.append({"role": "assistant", "content": reply})
+            if query == '/tokens':
+                print_token_usage(response, total_input_tokens, total_output_tokens)
+                query = input("You: ")
+                continue
 
-        if response.stop_reason == "end_turn":
-            print(f"Claude: {reply}")
-            print(
-                f"[Tokens used - in: {response.usage.input_tokens}, out: {response.usage.output_tokens} "
-                f"| total in: {total_input_tokens} out: {total_output_tokens}]"
+            conversation_history.append({"role": "user", "content": query})
+            response = client.messages.create(
+                model="claude-haiku-4-5",
+                max_tokens=max_tokens,
+                messages=conversation_history,
+                system=personality,
+                temperature=temperature,
             )
 
-        elif response.stop_reason == "max_tokens":
-            print("The answer for your query was too long and was truncated:")
-            print(f"Claude: {reply}")
-            conversation_history[-1] = {
-                "role": "assistant",
-                "content": reply + " [ This response was truncated ]",
-            }
-        else:
-            print(f"Claude: {reply}")
-            print("The answer for your query was cut short due to:")
-            print(f"Claude: {response.stop_reason}")
+            total_input_tokens += response.usage.input_tokens
+            total_output_tokens += response.usage.output_tokens
+            reply = response.content[0].text
+            conversation_history.append({"role": "assistant", "content": reply})
 
-        query = input("You: ")
-    print("Goodbye!")
+            if response.stop_reason == "end_turn":
+                print(f"Claude: {reply}")
+                print_token_usage(response, total_input_tokens, total_output_tokens)
+
+            elif response.stop_reason == "max_tokens":
+                print("The answer for your query was too long and was truncated:")
+                print(f"Claude: {reply}")
+                conversation_history[-1] = {
+                    "role": "assistant",
+                    "content": reply + " [ This response was truncated ]",
+                }
+            else:
+                print(f"Claude: {reply}")
+                print("The answer for your query was cut short due to:")
+                print(f"Claude: {response.stop_reason}")
+
+            query = input("You: ")
+        print("Goodbye!")
+    except KeyboardInterrupt:
+        print("\n\nGoodbye! (interrupted)")
+
+
+
+
+def print_token_usage(response, total_input_tokens, total_output_tokens):
+    if response:
+        print(f"[Tokens used last response - in: {response.usage.input_tokens}, out: {response.usage.output_tokens} ")
+    print(f"total in: {total_input_tokens} out: {total_output_tokens}]")
 
 
 def get_personality():
